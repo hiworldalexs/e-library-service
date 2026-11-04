@@ -1,0 +1,13 @@
+target/
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+.vscode/
+*.log
+.DS_Store
+# H2 file DB (local runs / seed)
+*.mv.db
+*.trace.db
+data/
