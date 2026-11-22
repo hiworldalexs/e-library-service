@@ -15,6 +15,7 @@ import com.elibrary.service.dto.ReturnResult;
 import com.elibrary.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -37,6 +38,7 @@ public class LibraryService {
     private final LoanRepository loanRepository;
     private final ELibraryProperties properties;
     private final Clock clock;
+    private final UserLockService userLockService;
 
     @Transactional(readOnly = true)
     public Page<BookWithAvailability> browseBooks(Pageable pageable, String title, String author, String category) {
@@ -64,6 +66,13 @@ public class LibraryService {
 
     @Transactional
     public BorrowResult borrowBook(String userId, String bookId) {
+        try {
+            userLockService.ensureExists(userId);
+        } catch (DataIntegrityViolationException ex) {
+            log.debug("User lock already exists for userId={}", userId);
+        }
+        userLockService.lock(userId);
+
         Instant borrowedAt = Instant.now(clock);
         if (loanRepository.existsByUserIdAndReturnedAtIsNullAndDueDateBefore(userId, borrowedAt)) {
             throw new ELibraryException(ErrorCode.USER_HAS_OVERDUE_LOAN);

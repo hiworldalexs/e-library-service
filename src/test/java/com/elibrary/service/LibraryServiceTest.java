@@ -56,6 +56,9 @@ class LibraryServiceTest {
     @Mock
     private LoanRepository loanRepository;
 
+    @Mock
+    private UserLockService userLockService;
+
     private ELibraryProperties properties;
     private LibraryService service;
 
@@ -69,7 +72,7 @@ class LibraryServiceTest {
         properties.setLoanPeriodDays(14);
 
         Clock clock = Clock.fixed(FIXED_NOW, ZoneOffset.UTC);
-        service = new LibraryService(bookRepository, loanRepository, properties, clock);
+        service = new LibraryService(bookRepository, loanRepository, properties, clock, userLockService);
 
         singleCopyBook = Book.builder()
                 .id(SINGLE_ID)
